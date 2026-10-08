@@ -1,0 +1,8 @@
+[gradlePlugin]
+path = "classtransformer-gradle"
+tag = "gradle"
+
+[api]
+path = "classtransformer-api"
+tag = "api"
+

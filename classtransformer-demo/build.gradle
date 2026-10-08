@@ -1,0 +1,51 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.minecraftforge.classtransformer'
+    alias libs.plugins.licenser
+}
+
+group = 'net.minecraftforge'
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(25)
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url = 'https://maven.minecraftforge.net/' }
+}
+
+configurations {
+    transformers
+}
+
+dependencies {
+    compileOnly libs.jspecify
+    implementation project(':classtransformer-api')
+
+    transformers project(':classtransformer-demo-transformer')
+}
+
+license {
+    header = file('../LICENSE-header.txt')
+}
+
+tasks.named('jar', Jar) {
+    manifest {
+        attributes(['Main-Class': 'net.minecraftforge.classtransformer.demo.Main'])
+    }
+}
+
+final transformJar = classTransformer.classes('transformJar', tasks.named('jar', Jar)) {
+    classpath.from(configurations.transformers)
+}
+
+
+tasks.register('runTransformed', JavaExec) {
+    classpath = files(transformJar)
+    logging.captureStandardOutput LogLevel.LIFECYCLE
+    logging.captureStandardError LogLevel.ERROR
+}
+

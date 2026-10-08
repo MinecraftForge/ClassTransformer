@@ -1,0 +1,50 @@
+pluginManagement {
+    includeBuild('classtransformer-gradle')
+
+    repositories {
+        gradlePluginPortal()
+        maven { url = 'https://maven.minecraftforge.net/' }
+        //mavenLocal()
+    }
+}
+
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+rootProject.name = 'classtransformer'
+
+includeBuild 'classtransformer-gradle'
+
+//@formatter:off
+dependencyResolutionManagement.versionCatalogs.register('libs') {
+    version 'gradleutils', '3.4.10'
+    plugin 'licenser',       'net.minecraftforge.licenser'    version '1.2.0' // https://plugins.gradle.org/plugin/net.minecraftforge.licenser
+    plugin 'gradleutils',    'net.minecraftforge.gradleutils' versionRef 'gradleutils' // https://plugins.gradle.org/plugin/net.minecraftforge.gradleutils
+    plugin 'gitversion',     'net.minecraftforge.gitversion'  version '3.1.7' // https://plugins.gradle.org/plugin/net.minecraftforge.gitversion
+    plugin 'changelog',      'net.minecraftforge.changelog'   version '3.2.1' // https://plugins.gradle.org/plugin/net.minecraftforge.changelog
+    plugin 'shadow',         'com.gradleup.shadow'            version '9.6.1' // https://plugins.gradle.org/plugin/com.gradleup.shadow
+
+    library 'jspecify',  'org.jspecify',       'jspecify'    version '1.0.0'
+    library 'jopt',      'net.sf.jopt-simple', 'jopt-simple' version '6.0-alpha-3'
+    library 'renamer',   'net.minecraftforge', 'renamer'     version '2.2.8'
+
+    // Transitive dependencies of renamer, we need to add them because renamer does not ship a module-info so java won't actually load them
+    version 'asm', '9.9.1'
+    library 'asm',         'org.ow2.asm', 'asm'         versionRef 'asm'
+    library 'asm-commons', 'org.ow2.asm', 'asm-commons' versionRef 'asm'
+    library 'asm-tree',    'org.ow2.asm', 'asm-tree'    versionRef 'asm'
+    bundle  'asm', ['asm', 'asm-commons', 'asm-tree']
+
+    // Tests
+    version 'junit', '5.10.1'
+    library 'junit-api',               'org.junit.jupiter',  'junit-jupiter-api'       versionRef 'junit'
+    library 'junit-engine',            'org.junit.jupiter',  'junit-jupiter-engine'    versionRef 'junit'
+    library 'junit-platform-launcher', 'org.junit.platform', 'junit-platform-launcher' version '1.10.1'
+    bundle  'junit-runtime', ['junit-engine', 'junit-platform-launcher']
+}
+//@formatter:on
+
+include 'classtransformer-api'
+include 'classtransformer-demo'
+include 'classtransformer-demo-transformer'

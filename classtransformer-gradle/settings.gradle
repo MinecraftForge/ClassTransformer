@@ -1,0 +1,36 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenLocal()
+    }
+}
+
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+rootProject.name = 'classtransformer-gradle'
+
+//@formatter:off
+dependencyResolutionManagement.versionCatalogs.register('libs') {
+    version 'gradleutils', '3.4.10'
+    plugin 'licenser',       'net.minecraftforge.licenser'    version '1.2.0' // https://plugins.gradle.org/plugin/net.minecraftforge.licenser
+    plugin 'gradleutils',    'net.minecraftforge.gradleutils' versionRef 'gradleutils' // https://plugins.gradle.org/plugin/net.minecraftforge.gradleutils
+    plugin 'gitversion',     'net.minecraftforge.gitversion'  version '3.1.7' // https://plugins.gradle.org/plugin/net.minecraftforge.gitversion
+    plugin 'changelog',      'net.minecraftforge.changelog'   version '3.2.1' // https://plugins.gradle.org/plugin/net.minecraftforge.changelog
+    plugin 'plugin-publish', 'com.gradle.plugin-publish'      version '2.1.1' // https://plugins.gradle.org/plugin/com.gradle.plugin-publish
+    plugin 'shadow',         'com.gradleup.shadow'            version '9.6.1' // https://plugins.gradle.org/plugin/com.gradleup.shadow
+
+    // Common Libraries
+    library 'annotations-jspecify',  'org.jspecify',  'jspecify'    version '1.0.0'
+    library 'annotations-jetbrains', 'org.jetbrains', 'annotations' version '26.0.2'
+
+    // Main Application
+    library 'jopt',      'net.sf.jopt-simple', 'jopt-simple'    version '6.0-alpha-3'
+
+    // Gradle
+    version 'gradle', '9.1.0'
+    library 'gradle', 'name.remal.gradle-api', 'gradle-api'  versionRef 'gradle'
+    library 'gradleutils-shared', 'net.minecraftforge', 'gradleutils-shared' versionRef 'gradleutils'
+}
+//@formatter:on

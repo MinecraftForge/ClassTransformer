@@ -1,0 +1,25 @@
+
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    alias libs.plugins.licenser
+}
+
+group = 'net.minecraftforge'
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(25)
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly libs.jspecify
+    implementation project(':classtransformer-api')
+}
+
+license {
+    header = file('../LICENSE-header.txt')
+}
