@@ -54,6 +54,9 @@ dependencies {
     implementation libs.renamer
     implementation libs.bundles.asm // Needed for renamer
     implementation project('classtransformer-api')
+
+    // Used for testing
+    runtimeOnly project(':classtransformer-demo-transformer')
 }
 
 /*

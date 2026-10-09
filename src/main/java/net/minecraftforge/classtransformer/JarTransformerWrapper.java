@@ -27,20 +27,16 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 class JarTransformerWrapper implements Transformer {
-    private final Consumer<String> log;
     private final List<JarTransformer> transformers;
-    private @Nullable ModuleDesc moduleDesc;
+    private final ModuleDesc moduleDesc;
 
-    JarTransformerWrapper(Consumer<String> log, List<JarTransformer> transformers) {
-        this.log = log;
+    JarTransformerWrapper(String moduleName, List<JarTransformer> transformers) {
         this.transformers = transformers;
+        this.moduleDesc = ModuleDesc.of(moduleName);
     }
 
     @Override
     public void preprocess(Map<String, Entry> entries) {
-        moduleDesc = findModuleDesc(entries);
-        log.accept("ModuleDesc: " + moduleDesc);
-
         Function<String, byte[]> data = name -> {
             var entry = entries.get(name);
             return entry == null ? null : entry.getData();
@@ -48,58 +44,6 @@ class JarTransformerWrapper implements Transformer {
 
         for (var transformer : transformers)
             transformer.preprocess(entries.keySet(), data);
-    }
-
-    private ModuleDesc findModuleDesc(Map<String, Entry> entries) {
-        var module = entries.get("module-info.class");
-        if (module != null)
-            return ModuleDesc.of(readModuleInfoName(module));
-
-        // Technically JarFile supports the manifest being any case, but that's a pain and everything outputs it as upper case these days.
-        var manifest = readManifest(entries.get(JarFile.MANIFEST_NAME));
-        if (manifest == null) {
-            // No manifest, so it will be based off the file name, which last I looked into it is implementation specific on the JVM.
-            // As well as this API being designed for the module world, I'm just gunna fall back to naming the module 'unknown'
-            return ModuleDesc.of("unknown");
-        }
-
-        var multiRelease = Boolean.parseBoolean(manifest.getMainAttributes().getValue("Multi-Release"));
-        if (multiRelease) {
-            // If this is multi-release, then the module-info *might* be in a versioned folder.
-            // We have to do the slow lookup to find it
-            for (var entry : entries.entrySet()) {
-                if (entry.getKey().endsWith("module-info.class") && entry.getKey().startsWith("META-INF/versions/"))
-                    return ModuleDesc.of(readModuleInfoName(entry.getValue()));
-            }
-        }
-
-        var automatic = manifest.getMainAttributes().getValue("Automatic-Module-Name");
-        if (automatic != null)
-            return ModuleDesc.of(automatic);
-
-        // if all else fails, we are unknown
-        return ModuleDesc.of("unknown");
-    }
-
-    private static String readModuleInfoName(Transformer.Entry entry) {
-        var classModel = ClassFile.of().parse(entry.getData());
-        var modAttr = classModel.findAttribute(Attributes.module()).orElse(null);
-        if (modAttr == null)
-            throw new NoSuchElementException("Module info class " + entry.getName() + " does not have module attribute");
-        return modAttr.moduleName().name().stringValue();
-    }
-
-    private static @Nullable Manifest readManifest(Transformer.@Nullable Entry entry) {
-        if (entry == null)
-            return null;
-
-        var mf = new Manifest();
-        try {
-            mf.read(new ByteArrayInputStream(entry.getData()));
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to read manifest entry", e);
-        }
-        return mf;
     }
 
     public ClassEntry process(ClassEntry entry) {

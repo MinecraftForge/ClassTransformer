@@ -9,9 +9,11 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.FileOutputStream;
 import java.lang.module.ModuleDescriptor;
+import java.lang.module.ModuleFinder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -93,22 +95,38 @@ public class Main {
             log.accept("Store: False");
         }
 
+        // Find the module so we can filter out transformers that dont care about it
+        var modules = ModuleFinder.of(inputF.toPath()).findAll();
+        if (modules.size() != 1)
+            throw new IllegalStateException("Failed to find expected module from input file, found " + modules.size() + " but expected exactly 1");
+        var module = modules.iterator().next();
+
+        log.accept("Target Module: " + module.descriptor().toNameAndVersion());
+
         var transformers = new ArrayList<JarTransformer>();
         var services = ServiceLoader.load(JarTransformer.class);
         for (var itr = services.iterator(); itr.hasNext(); ) {
             try {
                 var service = itr.next();
-                log.accept("Transformer: " + service.getClass().getModule().getName() + ':' + service.getClass().getName());
-                transformers.add(service);
+                if (service.handlesModule(module)) {
+                    transformers.add(service);
+                    log.accept("Transformer: " + service.getClass().getModule().getName() + ':' + service.getClass().getName());
+                } else {
+                    log.accept("Skipped Transformer: " + service.getClass().getModule().getName() + ':' + service.getClass().getName());
+                }
             } catch (Throwable t) {
                 throw new IllegalStateException("Could not load JarTransformer service", t);
             }
         }
-        if (!transformers.isEmpty())
-            builder.add(new JarTransformerWrapper(log, transformers));
-
-        try (Renamer renamer = builder.build()) {
-            renamer.run(inputF, outputF);
+        if (!transformers.isEmpty()) {
+            builder.add(new JarTransformerWrapper(module.descriptor().name(), transformers));
+            try (Renamer renamer = builder.build()) {
+                renamer.run(inputF, outputF);
+            }
+        } else {
+            // No transformers, just copy the file
+            log.accept("No transformers, copying file to output");
+            Files.copy(inputF.toPath(), outputF.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
     }
 
@@ -142,6 +160,9 @@ public class Main {
     }
 
     private static String getVersion() {
-        return Main.class.getModule().getDescriptor().version().map(ModuleDescriptor.Version::toString).orElse("UNKNOWN");
+        var desc = Main.class.getModule().getDescriptor();
+        if (desc == null) // We are in the unnamed module for some reason
+            return "UNKNOWN";
+        return desc.version().map(ModuleDescriptor.Version::toString).orElse("UNKNOWN");
     }
 }
