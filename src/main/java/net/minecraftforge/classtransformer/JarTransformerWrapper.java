@@ -8,10 +8,8 @@ import net.minecraftforge.classtransformer.api.JarTransformer;
 import net.minecraftforge.renamer.api.Transformer;
 import org.jspecify.annotations.Nullable;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.lang.classfile.Attributes;
 import java.lang.classfile.ClassFile;
+import java.lang.classfile.ClassHierarchyResolver;
 import java.lang.classfile.ClassModel;
 import java.lang.classfile.ClassTransform;
 import java.lang.constant.ClassDesc;
@@ -20,19 +18,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 
 class JarTransformerWrapper implements Transformer {
     private final List<JarTransformer> transformers;
     private final ModuleDesc moduleDesc;
+    private final ClassFile.ClassHierarchyResolverOption classResolver;
 
-    JarTransformerWrapper(String moduleName, List<JarTransformer> transformers) {
+    JarTransformerWrapper(String moduleName, List<JarTransformer> transformers, ClassHierarchyResolver resolver) {
         this.transformers = transformers;
         this.moduleDesc = ModuleDesc.of(moduleName);
+        this.classResolver = ClassFile.ClassHierarchyResolverOption.of(resolver);
     }
 
     @Override
@@ -56,7 +52,7 @@ class JarTransformerWrapper implements Transformer {
                 continue;
 
             if (classModel == null)
-                classModel = ClassFile.of().parse(entry.getData());
+                classModel = ClassFile.of(classResolver).parse(entry.getData());
 
             var returnedTransform = transformer.transform(moduleDesc, classDesc, classModel);
             if (returnedTransform != ClassTransform.ACCEPT_ALL)

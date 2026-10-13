@@ -135,6 +135,7 @@ public abstract class TransformJar extends ToolExecBase<ClassTransformerProblems
     protected void addArguments() {
         this.args("--input", this.getInput());
         this.args("--output", this.getOutput());
+        this.args("--lib", this.getLibraries());
 
         if (this.getStore().getOrElse(false))
             this.args("--store");

@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.FileOutputStream;
+import java.lang.classfile.ClassHierarchyResolver;
 import java.lang.module.ModuleDescriptor;
 import java.lang.module.ModuleFinder;
 import java.nio.file.Files;
@@ -15,6 +16,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.function.Consumer;
@@ -35,6 +37,7 @@ public class Main {
         OptionSpec<File> inputO  = parser.accepts("input",  "Input jar file").withRequiredArg().ofType(File.class).required();
         OptionSpec<File> outputO = parser.accepts("output", "Output jar file, if unspecified, overwrites input").withRequiredArg().ofType(File.class);
         OptionSpec<File> logO    = parser.accepts("log",    "File to log data to, optional, defaults to System.out").withRequiredArg().ofType(File.class);
+        OptionSpec<File> libO    = parser.acceptsAll(Arrays.asList("lib", "e"), "Additional library to use for inheritance").withRequiredArg().ofType(File.class);
         OptionSpec<Integer> threadsO = parser.accepts("threads", "Number of threads to use, defaults to processor count.").withRequiredArg().ofType(Integer.class).defaultsTo(Runtime.getRuntime().availableProcessors());
         OptionSpec<Void> storeO = parser.accepts("store", "Disables compression, this is designed to produce stable output archives no matter what zlib implementation the user has installed");
         OptionSpec<Void> helpO = parser.accepts("help", "Prints help and exits").forHelp();
@@ -118,10 +121,22 @@ public class Main {
                 throw new IllegalStateException("Could not load JarTransformer service", t);
             }
         }
+
         if (!transformers.isEmpty()) {
-            builder.add(new JarTransformerWrapper(module.descriptor().name(), transformers));
-            try (Renamer renamer = builder.build()) {
-                renamer.run(inputF, outputF);
+            try (var resolver = new ModulePathClassResolver()) {
+                // Add libraries if needed
+                if (options.has(libO)) {
+                    for (File lib : options.valuesOf(libO)) {
+                        log.accept("lib: " + lib.getAbsolutePath());
+                        //builder.lib(lib);
+                        resolver.add(lib.toPath());
+                    }
+                }
+
+                builder.add(new JarTransformerWrapper(module.descriptor().name(), transformers, resolver.createResolver()));
+                try (Renamer renamer = builder.build()) {
+                    renamer.run(inputF, outputF);
+                }
             }
         } else {
             // No transformers, just copy the file
