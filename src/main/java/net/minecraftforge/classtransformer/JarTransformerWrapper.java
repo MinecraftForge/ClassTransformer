@@ -20,15 +20,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-class JarTransformerWrapper implements Transformer {
+final class JarTransformerWrapper implements Transformer {
     private final List<JarTransformer> transformers;
     private final ModuleDesc moduleDesc;
-    private final ClassFile.ClassHierarchyResolverOption classResolver;
+    private final ClassFile classFile;
 
     JarTransformerWrapper(String moduleName, List<JarTransformer> transformers, ClassHierarchyResolver resolver) {
         this.transformers = transformers;
         this.moduleDesc = ModuleDesc.of(moduleName);
-        this.classResolver = ClassFile.ClassHierarchyResolverOption.of(resolver);
+        this.classFile = ClassFile.of(ClassFile.ClassHierarchyResolverOption.of(resolver));
     }
 
     @Override
@@ -42,6 +42,7 @@ class JarTransformerWrapper implements Transformer {
             transformer.preprocess(entries.keySet(), data);
     }
 
+    @Override
     public ClassEntry process(ClassEntry entry) {
         var classDesc = ClassDesc.ofInternalName(entry.getClassName());
         var classTransform = ClassTransform.ACCEPT_ALL;
@@ -52,7 +53,7 @@ class JarTransformerWrapper implements Transformer {
                 continue;
 
             if (classModel == null)
-                classModel = ClassFile.of(classResolver).parse(entry.getData());
+                classModel = classFile.parse(entry.getData());
 
             var returnedTransform = transformer.transformClass(moduleDesc, classDesc, classModel);
             if (returnedTransform != ClassTransform.ACCEPT_ALL)
@@ -62,7 +63,7 @@ class JarTransformerWrapper implements Transformer {
         if (classTransform == ClassTransform.ACCEPT_ALL)
             return entry;
 
-        var transformed = ClassFile.of().transformClass(classModel, classTransform);
+        var transformed = classFile.transformClass(classModel, classTransform);
         if (entry.isMultiRelease())
             return ClassEntry.create(entry.getClassName(), entry.getTime(), transformed, entry.getVersion());
         return ClassEntry.create(entry.getName(), entry.getTime(), transformed);
