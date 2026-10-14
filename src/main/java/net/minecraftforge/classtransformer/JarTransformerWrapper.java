@@ -17,8 +17,6 @@ import java.lang.constant.ModuleDesc;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 
 final class JarTransformerWrapper implements Transformer {
     private final List<JarTransformer> transformers;
@@ -29,17 +27,6 @@ final class JarTransformerWrapper implements Transformer {
         this.transformers = transformers;
         this.moduleDesc = ModuleDesc.of(moduleName);
         this.classFile = ClassFile.of(ClassFile.ClassHierarchyResolverOption.of(resolver));
-    }
-
-    @Override
-    public void preprocess(Map<String, Entry> entries) {
-        Function<String, byte[]> data = name -> {
-            var entry = entries.get(name);
-            return entry == null ? null : entry.getData();
-        };
-
-        for (var transformer : transformers)
-            transformer.preprocess(entries.keySet(), data);
     }
 
     @Override
@@ -94,9 +81,7 @@ final class JarTransformerWrapper implements Transformer {
     private JarTransformer.@Nullable Entry process(JarTransformer.Entry original) {
         var transformed = original;
         for (var transformer : transformers) {
-            if (!transformer.handlesModule(moduleDesc))
-                continue;
-            transformed = transformer.handleResource(transformed);
+            transformed = transformer.transformResource(moduleDesc, transformed);
             if (transformed == null)
                 return null;
         }
@@ -107,8 +92,6 @@ final class JarTransformerWrapper implements Transformer {
     public Collection<? extends Entry> getExtras() {
         var ret = new ArrayList<ResourceEntry>();
         for (var transformer : transformers) {
-            if (!transformer.handlesModule(moduleDesc))
-                continue;
             var extras = transformer.getExtras();
             for (var extra : extras)
                ret.add(ResourceEntry.create(extra.name(), extra.time(), extra.data()));

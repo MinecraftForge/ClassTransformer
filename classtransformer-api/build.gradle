@@ -16,7 +16,7 @@ version = gitversion.tagOffset
 println "Version: $version"
 
 java {
-    // We use java 25 because thats when ClassFile API was released
+    // We use java 25 because that's when ClassFile API was released
     toolchain.languageVersion = JavaLanguageVersion.of(25) 
     withSourcesJar()
 }
@@ -60,7 +60,7 @@ publishing {
 
             developers {
                 developer gradleutils.pom.developers.LexManos
-                developer gradleutils.pom.developers.Paint
+                developer gradleutils.pom.developers.Paint_Ninja
             }
         }
     }

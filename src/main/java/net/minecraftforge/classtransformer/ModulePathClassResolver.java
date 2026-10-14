@@ -18,12 +18,11 @@ import java.lang.module.ModuleReference;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-class ModulePathClassResolver implements Closeable {
-    private final Map<String, ModuleReference> packages = new HashMap<>();
-    private final Map<ModuleReference, ModuleReader> readers = new ConcurrentHashMap<>();
+final class ModulePathClassResolver implements Closeable {
+    private final HashMap<String, ModuleReference> packages = new HashMap<>();
+    private final ConcurrentHashMap<ModuleReference, ModuleReader> readers = new ConcurrentHashMap<>();
 
     void add(Path path) {
         var modules = ModuleFinder.of(path).findAll();

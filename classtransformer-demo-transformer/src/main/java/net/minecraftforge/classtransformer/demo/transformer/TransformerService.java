@@ -13,7 +13,7 @@ import java.lang.classfile.CodeTransform;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ModuleDesc;
 
-public class TransformerService implements JarTransformer {
+public final class TransformerService implements JarTransformer {
     private static final ModuleDesc TARGET_MODULE = ModuleDesc.of("net.minecraftforge.classtransformer.demo");
     private static final ClassDesc TARGET_CLASS = ClassDesc.of("net.minecraftforge.classtransformer.demo.Main");
 
@@ -24,13 +24,12 @@ public class TransformerService implements JarTransformer {
 
     @Override
     public boolean handlesClass(ModuleDesc moduleDesc, ClassDesc classDesc) {
-        return handlesModule(moduleDesc) && TARGET_CLASS.equals(classDesc);
+        return TARGET_CLASS.equals(classDesc);
     }
 
     @Override
     public ClassTransform transformClass(ModuleDesc moduleDesc, ClassDesc classDesc, ClassModel classModel) {
-        if (!handlesClass(moduleDesc, classDesc))
-            throw new IllegalStateException("Should not be called for a module/class we filtered " + moduleDesc + " " + classDesc);
+        assert handlesClass(moduleDesc, classDesc) : "Should not be called for a module/class we filtered " + moduleDesc + " " + classDesc;
 
         CodeTransform replacement = (builder, element) -> {
             builder.ldc("TRANSFORMED")

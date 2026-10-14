@@ -8,15 +8,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.FileOutputStream;
-import java.lang.classfile.ClassHierarchyResolver;
 import java.lang.module.ModuleDescriptor;
 import java.lang.module.ModuleFinder;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.function.Consumer;
@@ -31,13 +28,13 @@ import net.minecraftforge.classtransformer.api.JarTransformer;
 import net.minecraftforge.renamer.api.Renamer;
 import org.jspecify.annotations.Nullable;
 
-public class Main {
+public final class Main {
     static void main(String[] args) throws IOException {
         OptionParser parser = new OptionParser();
         OptionSpec<File> inputO  = parser.accepts("input",  "Input jar file").withRequiredArg().ofType(File.class).required();
         OptionSpec<File> outputO = parser.accepts("output", "Output jar file, if unspecified, overwrites input").withRequiredArg().ofType(File.class);
         OptionSpec<File> logO    = parser.accepts("log",    "File to log data to, optional, defaults to System.out").withRequiredArg().ofType(File.class);
-        OptionSpec<File> libO    = parser.acceptsAll(Arrays.asList("lib", "e"), "Additional library to use for inheritance").withRequiredArg().ofType(File.class);
+        OptionSpec<File> libO    = parser.acceptsAll(List.of("lib", "e"), "Additional library to use for inheritance").withRequiredArg().ofType(File.class);
         OptionSpec<Integer> threadsO = parser.accepts("threads", "Number of threads to use, defaults to processor count.").withRequiredArg().ofType(Integer.class).defaultsTo(Runtime.getRuntime().availableProcessors());
         OptionSpec<Void> storeO = parser.accepts("store", "Disables compression, this is designed to produce stable output archives no matter what zlib implementation the user has installed");
         OptionSpec<Void> helpO = parser.accepts("help", "Prints help and exits").forHelp();
@@ -107,10 +104,10 @@ public class Main {
         log.accept("Target Module: " + module.descriptor().toNameAndVersion());
 
         var transformers = new ArrayList<JarTransformer>();
-        var services = ServiceLoader.load(JarTransformer.class);
-        for (var itr = services.iterator(); itr.hasNext(); ) {
+        var services = ServiceLoader.load(JarTransformer.class).iterator();
+        while (services.hasNext()) {
             try {
-                var service = itr.next();
+                var service = services.next();
                 if (service.handlesModule(module)) {
                     transformers.add(service);
                     log.accept("Transformer: " + service.getClass().getModule().getName() + ':' + service.getClass().getName());
@@ -158,7 +155,7 @@ public class Main {
                 else
                     throw new IllegalArgumentException("Must specify a file when using --cfg argument.");
 
-                Path file = Paths.get(path);
+                Path file = Path.of(path);
                 if (!Files.exists(file))
                     throw new IllegalArgumentException("error: missing config '" + path + "'");
 

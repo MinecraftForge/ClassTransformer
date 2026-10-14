@@ -33,7 +33,7 @@ import java.lang.module.ModuleReference;
 /// not interested in transforming the class after further inspection.
 ///
 /// Finally, the chained [ClassTransform]s are applied against the class bytes and the class is loaded.
-public interface ClassFileTransformer {
+public sealed interface ClassFileTransformer permits JarTransformer {
     /// Called once per module before they are loaded, each transformer is given the opportunity to inspect the module
     /// and determine if it is interested in transforming any classes inside it.
     ///
