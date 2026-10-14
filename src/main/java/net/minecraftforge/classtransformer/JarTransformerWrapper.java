@@ -54,7 +54,7 @@ class JarTransformerWrapper implements Transformer {
             if (classModel == null)
                 classModel = ClassFile.of(classResolver).parse(entry.getData());
 
-            var returnedTransform = transformer.transform(moduleDesc, classDesc, classModel);
+            var returnedTransform = transformer.transformClass(moduleDesc, classDesc, classModel);
             if (returnedTransform != ClassTransform.ACCEPT_ALL)
                 classTransform = classTransform.andThen(returnedTransform);
         }

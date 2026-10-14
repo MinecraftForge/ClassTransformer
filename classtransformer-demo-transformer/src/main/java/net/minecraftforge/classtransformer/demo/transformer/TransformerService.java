@@ -28,7 +28,7 @@ public class TransformerService implements JarTransformer {
     }
 
     @Override
-    public ClassTransform transform(ModuleDesc moduleDesc, ClassDesc classDesc, ClassModel classModel) {
+    public ClassTransform transformClass(ModuleDesc moduleDesc, ClassDesc classDesc, ClassModel classModel) {
         if (!handlesClass(moduleDesc, classDesc))
             throw new IllegalStateException("Should not be called for a module/class we filtered " + moduleDesc + " " + classDesc);
 
