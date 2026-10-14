@@ -23,5 +23,9 @@ abstract class ClassTransformerPlugin extends EnhancedPlugin<Project> {
     public void setup(Project project) {
         project.getPluginManager().apply(BasePlugin.class);
         project.getExtensions().create(ClassTransformerExtension.class, ClassTransformerExtension.NAME, ClassTransformerExtensionImpl.class);
+
+        // Lazily make assemble build every TransformJar, like the java plugin does for jar
+        var tasks = project.getTasks();
+        tasks.named(BasePlugin.ASSEMBLE_TASK_NAME).configure(assemble -> assemble.dependsOn(tasks.withType(TransformJar.class)));
     }
 }
