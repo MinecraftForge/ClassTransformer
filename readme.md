@@ -1,39 +1,27 @@
-# Renamer
+# ClassTransformer
 ---
-Renamer is a general purpose Java ByteCode renaming tool. Designed to run on Java 8, but supports renaming up to Java 25. It utilizes the [OW2's ASM](https://asm.ow2.io/) library. We are mainly targeting the Minecraft ecosystem so there are some features specific for that. It supports full inheritance traversal while remapping so that you don't have to have a mapping entry for every member.
+ClassTransformer is a general purpose Java ByteCode transforming tool. Designed to run on Java 25, using the official ClassFile api. It loads transformers that implement `net.minecraftforge.classtransformer.api.JarTransformer` from the environment using a ServiceLoader. 
 
 ### Usage
 ---
-Renamer is primarily designed as a command line tool. Basic Usage:
-`java -jar renamer.jar --map map.tsrg --output output.jar input.jar`
-In order to build a proper inheritance tree, you must either specify the full classpath, or add additional libraries using the `--lib lib.jar` argument, which can be specified as many times as needed. Map files can be any format supported by [SRGUtils](https://github.com/minecraftforge/srgutils/) (ProGuard, TSRG, Tiny v1 or v2+, or even XSRG)
+This is primarily designed to be invoked from gradle, as such, refere to the demo projects for working examples.
+However, it can be invoked from the command line as well 
+`java -p classstransformer.jar;custom-transformer-service.jar --input input.jar --output output.jar`
+
+In order to properly compute frames, it is recommended that you pass in all libraries used by the input jar using the `--lib lib.jar` argument, which can be specified as many times as needed.
 
 ### Gradle
 ---
-We provide a gradle plugin published on under the `net.minecraftforge.renamer` id.
+We provide a gradle plugin published on under the `net.minecraftforge.classstransformer` id.
 
-You can see an example in the `renamer-gradle-demo` sub-folder.
+You can see an example in the `classstransformer-demo` sub-folder.
 
 ```groovy
 plugins {
-  id 'net.minecraftforge.renamer' version '1.0.17'
+  id 'net.minecraftforge.classtransformer' version '0.1.0'
 }
 
-renamer.classes(tasks.named('jar', Jar)) {
-    map = files('mappings.tsrg')
-    archiveClassifier = 'renamed'
-}
-```
-
-The gradle plugin also supports renaming source files using our [Srg2Source](https://github.com/MinecraftForge/Srg2Source/) tool. This is done in two steps, extract and apply. So there are two tasks created.
-```groovy
-def renamedSources = renamer.sources(sourceSets.main) {
-    extract {
-        sourceCompatibility = JavaLanguageVersion.of(17)
-    }
-    apply {
-        map = files('libs/sources.tsrg')
-        archiveClassifier = 'sources-renamed'
-    }
+classsTransformer.register(tasks.named('jar', Jar)) {
+    archiveClassifier = 'transformed'
 }
 ```

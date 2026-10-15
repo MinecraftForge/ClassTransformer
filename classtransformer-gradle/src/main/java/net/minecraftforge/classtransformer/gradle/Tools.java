@@ -11,7 +11,7 @@ final class Tools {
 
     static final Tool TOOL = Tool.ofForge(
     "tool",
-    "net.minecraftforge:classtransformer:0.0.0",
+    "net.minecraftforge:classtransformer:0.1.0",
     25,
     "net.minecraftforge.classtransformer.Main",
     "net.minecraftforge.classtransformer"

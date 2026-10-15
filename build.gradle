@@ -1,6 +1,4 @@
 import org.gradle.api.plugins.jvm.JvmTestSuite
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import com.github.jengelman.gradle.plugins.shadow.transformers.PropertiesFileTransformer
 
 plugins {
     id 'application'
@@ -12,7 +10,6 @@ plugins {
     alias libs.plugins.gitversion
     alias libs.plugins.changelog
     alias libs.plugins.licenser
-    alias libs.plugins.shadow
 }
 
 gradleutils.displayName = 'Class Transformer'
@@ -48,6 +45,10 @@ repositories {
     maven gradleutils.forgeMaven
 }
 
+configurations {
+    testTransformers
+}
+
 dependencies {
     compileOnly libs.jspecify
     implementation libs.jopt
@@ -55,26 +56,19 @@ dependencies {
     implementation libs.bundles.asm // Needed for renamer
     implementation project('classtransformer-api')
 
-    // Used for testing
-    runtimeOnly project(':classtransformer-demo-transformer')
+    testTransformers project(':classtransformer-demo-transformer')
 }
 
-/*
-tasks.named('shadowJar', ShadowJar) {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    ext.root = 'net.minecraftforge.shade'
-    minimize()
-    relocate 'com.github.jezza',           root + '.toml'
-    relocate 'joptsimple',                 root + '.joptsimple'
-    relocate 'org.objectweb.asm',          root + '.asm'
-    relocate 'net.minecraftforge.renamer', root + '.renamer'
-    // Rewrite JOpt's message files, so that help text is displayed nicely.
-    transform(PropertiesFileTransformer) {
-        paths = ['^joptsimple/.+/Messages.properties$']
-        keyTransformer = { key -> "$root.$key".toString() }
-    }
+// This is here so that we can debug in intellij, using custom classpaths breaks modularity if done in IDE
+tasks.named('run', JavaExec) {
+    classpath.from(configurations.testTransformers)
+    mainModule = application.mainModule
+    mainClass = application.mainClass
+
+    args '--input', configurations.detachedConfiguration(dependencies.project(path: ':classtransformer-demo'))
+        .setTransitive(false).singleFile.absolutePath
+    args '--output', project.layout.buildDirectory.file('test-transformed.jar').get().asFile.absolutePath
 }
-*/
 
 changelog {
     fromBase()
@@ -99,9 +93,9 @@ publishing {
         from components.java
 
         pom {
-            name = 'Renamer'
-            description = 'A tool that renames java bytecode elements.'
-            url = 'https://github.com/MinecraftForge/Class'
+            name = 'ClassTransformer'
+            description = 'A tool that runs Class Transformers using ClassFile api over jar archives'
+            url = 'https://github.com/MinecraftForge/ClassTransformer'
 
             gradleutils.pom.addRemoteDetails(pom)
 

@@ -4,8 +4,9 @@ on:
   push:
     branches: [ "master" ]
     paths-ignore:
-      - 'renamer-gradle/**'
-      - 'renamer-gradle-demo/**'
+      - 'classtransformer-gradle/**'
+      - 'classtransformer-demo/**'
+      - 'classtransformer-demo-transformer/**'
       - '.github/workflows/**'
       - 'docs/**'
       - 'README.md'
@@ -17,9 +18,9 @@ jobs:
   build:
     uses: MinecraftForge/SharedActions/.github/workflows/gradle.yml@v0
     with:
-      java: 17
+      java: 25
       gradle_tasks: "check :publish"
-      artifact_name: "renamer"
+      artifact_name: "classtransformer"
     secrets:
       DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
       PROMOTE_ARTIFACT_WEBHOOK: ${{ secrets.PROMOTE_ARTIFACT_WEBHOOK }}

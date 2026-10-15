@@ -15,7 +15,7 @@ import java.util.List;
 /// A service found by the static transformer processor
 /// This is intended to allow the transformers to have full information about the jar.
 /// As well as giving a way to deal with non-class files, and adding extra files.
-public non-sealed interface JarTransformer extends ClassFileTransformer {
+public interface JarTransformer extends ClassFileTransformer {
     /// Process a non-class resource entry in the jar
     ///
     /// @param moduleDesc The name of the module this resource is in

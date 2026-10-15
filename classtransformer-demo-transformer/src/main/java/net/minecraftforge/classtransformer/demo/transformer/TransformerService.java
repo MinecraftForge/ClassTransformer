@@ -29,7 +29,8 @@ public final class TransformerService implements JarTransformer {
 
     @Override
     public ClassTransform transformClass(ModuleDesc moduleDesc, ClassDesc classDesc, ClassModel classModel) {
-        assert handlesClass(moduleDesc, classDesc) : "Should not be called for a module/class we filtered " + moduleDesc + " " + classDesc;
+        if (!handlesModule(moduleDesc))
+            throw new IllegalArgumentException("Should not be called for a module/class we filtered " + moduleDesc + " " + classDesc);
 
         CodeTransform replacement = (builder, element) -> {
             builder.ldc("TRANSFORMED")
