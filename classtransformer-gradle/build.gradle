@@ -14,7 +14,7 @@ plugins {
 gradleutils.displayName = 'Class Transformer Gradle Plugin'
 description = 'Utilities for doing static class transformers on java jars.'
 group = 'net.minecraftforge'
-version = gitversion.tagOffset
+version = gitversion.version
 
 println "Version: $version"
 
@@ -81,7 +81,7 @@ changelog {
 
 gradlePlugin {
     website = gitversion.url
-    vcsUrl = gitversion.url + '.git'
+    vcsUrl = gitversion.url.get() + '.git'
 
     plugins.register('classtransformer') {
         id = 'net.minecraftforge.classtransformer'

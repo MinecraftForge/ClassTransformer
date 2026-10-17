@@ -9,9 +9,9 @@ plugins {
 }
 
 gradleutils.displayName = 'Class Transformer API'
-description = 'Class Transformations API'
+description = 'Class Transformer API'
 group = 'net.minecraftforge'
-version = gitversion.tagOffset
+version = gitversion.version
 
 println "Version: $version"
 

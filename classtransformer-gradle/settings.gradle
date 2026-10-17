@@ -16,8 +16,8 @@ dependencyResolutionManagement.versionCatalogs.register('libs') {
     version 'gradleutils', '3.4.11'
     plugin 'licenser',       'net.minecraftforge.licenser'    version '1.2.0' // https://plugins.gradle.org/plugin/net.minecraftforge.licenser
     plugin 'gradleutils',    'net.minecraftforge.gradleutils' versionRef 'gradleutils' // https://plugins.gradle.org/plugin/net.minecraftforge.gradleutils
-    plugin 'gitversion',     'net.minecraftforge.gitversion'  version '3.1.7' // https://plugins.gradle.org/plugin/net.minecraftforge.gitversion
-    plugin 'changelog',      'net.minecraftforge.changelog'   version '3.2.1' // https://plugins.gradle.org/plugin/net.minecraftforge.changelog
+    plugin 'gitversion',     'net.minecraftforge.gitversion'  version '4.0.1' // https://plugins.gradle.org/plugin/net.minecraftforge.gitversion
+    plugin 'changelog',      'net.minecraftforge.changelog'   version '3.2.3' // https://plugins.gradle.org/plugin/net.minecraftforge.changelog
     plugin 'plugin-publish', 'com.gradle.plugin-publish'      version '2.1.1' // https://plugins.gradle.org/plugin/com.gradle.plugin-publish
     plugin 'shadow',         'com.gradleup.shadow'            version '9.6.1' // https://plugins.gradle.org/plugin/com.gradleup.shadow
 
