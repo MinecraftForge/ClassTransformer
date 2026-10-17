@@ -38,7 +38,7 @@ tasks.named('jar', Jar) {
     }
 }
 
-final transformJar = classTransformer.classes('transformJar', tasks.named('jar', Jar)) {
+final transformJar = classTransformer.register('transformJar', tasks.named('jar', Jar)) {
     classpath.from(configurations.transformers)
 }
 

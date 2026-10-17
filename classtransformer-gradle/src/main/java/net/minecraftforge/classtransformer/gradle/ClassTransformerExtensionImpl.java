@@ -35,7 +35,7 @@ abstract class ClassTransformerExtensionImpl implements ClassTransformerExtensio
     }
 
     @Override
-    public TaskProvider<TransformJar> classes(String name, Action<? super TransformJar> action) {
+    public TaskProvider<TransformJar> register(String name, Action<? super TransformJar> action) {
         var ret = getProject().getTasks().register(name, TransformJar.class);
         ret.configure(action);
         return addToAssemble(ret);
